@@ -15,8 +15,18 @@ for i in range(91,600):
     hdu = fits.open("/media/narip/新加卷1/TOI_Data/{:0>4d}/LFI_TOI_030-PTG_R2.10_OD{:0>4d}.fits".format(i,i))
     hdu2 = fits.open("/media/narip/新加卷1/TOI_Data/{:0>4d}/LFI_TOI_030-SCI_R2.00_OD{:0>4d}.fits".format(i,i))
 
-    nonzero_index = np.where(hdu2[2].data.field(1) != 0)
-    zero_index = np.where(hdu2[2].data.field(1) == 0)
+    # if OBT is zeros
+    OBT_zero = np.where(hdu2[1].data.field(1) == 0)
+    OBT_nonzero = np.where(hdu2[1].data.field(1) != 0)
+
+    LF_nonzero = np.where(hdu2[2].data.field(1) != 0)
+    LF_zero = np.where(hdu2[2].data.field(1) == 0)
+
+    # effective when OBT and LF are both effective
+    # wrong when any of OBT and LF wrong
+    nonzero_index = np.union1d(OBT_nonzero,LF_nonzero)
+    zero_index = np.intersect1d(OBT_zero,LF_zero)
+
     thetas = hdu[2].data.field(0)
     phis = hdu[2].data.field(1)
 
@@ -24,9 +34,9 @@ for i in range(91,600):
     values = hdu2[2].data.field(0)
     np.add.at(values,nonzero_index,-values[nonzero_index])
 
-
     np.add.at(hpxmap,index,values)
     np.add.at(pixcount,index[zero_index],1)
+
 
 
 
